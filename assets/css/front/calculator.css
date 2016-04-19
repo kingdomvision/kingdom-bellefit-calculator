@@ -1,0 +1,39 @@
+.tab-content{border-bottom:2px solid #479590;float:left;width:100%}
+.content-area .navbar{background:#479590 none repeat scroll 0 0;border-radius:0;margin:0;border:none}
+.content-area .nav-tabs{margin:0;padding:10px}
+.content-area .nav-tabs > li img{float:left;margin:12px 10px 0 20px}
+.content-area .nav-tabs > li .active-img,.content-area .nav-tabs > li.active img{display:none}
+.content-area .nav-tabs > li.active img.active-img{display:block}
+.content-area .nav-tabs > li > a{background:#3c8782 none repeat scroll 0 0;border:1px solid #70c1bc;height:81px;padding:0;width:251px;border-radius:10px;margin:0 38px 0 0;color:#ccfaf7;position:relative;font-size:24px;font-weight:600;line-height:normal}
+.content-area .nav-tabs > li > a::after{background:#3c8782 none repeat scroll 0 0;border-bottom:2px solid #6cbdb8;border-top:2px solid #6cbdb8;bottom:0;content:"";height:8px;margin:auto;position:absolute;right:-40px;top:0;width:40px}
+.content-area .nav-tabs > li.active > a::after{background:#ade9e5 none repeat scroll 0 0;width:38px}
+.content-area .nav-tabs > li:last-child > a{margin:0}
+.content-area .nav-tabs > li:last-child > a:after{display:none}
+.content-area .nav-tabs > li.active > a,.content-area .nav-tabs > li.active > a:hover{background:#78c6c1;border:2px solid #ade9e5;color:#103835}
+.content-area .nav-tabs > li > a span{display:table-cell;height:77px;margin:0;vertical-align:middle}
+.content-area .calc-main-title{background:#ead9c0 none repeat scroll 0 0;padding:22px 0 23px;}
+.content-area .calc-main-title > h3{color:#402f16;font-size:36px;font-weight:600;margin:0;text-align:center}
+.content-area .progress-bar-container{background:#dbebeb none repeat scroll 0 0;margin:0;text-align:center;padding:1px 0 5px}
+.content-area .progress-bar-container .progress{display:inline-block;height:8px;width:987px;background:#b0d1d1;border-radius:10px;margin:0}
+.content-area .progress-bar-container .progress .progress-bar-success{background-color:#dd8500;background-image:repeating-linear-gradient(135deg,transparent,transparent 5px,rgba(255,255,255,.2) 5px,rgba(255,255,255,.2) 10px)}
+.content-area .progress-bar-container .progress-bar-text{display:inline-block;font-size:14px;color:#2f4947}
+.tab-content li{display:block}
+.tab-content .ul-inline li{display:inline-block;width:194px;}
+.tab-content ul.steps{margin:0}
+.tab-content ul.steps > li,.tab-content ul.steps > div > li{border-top:1px solid #dbebeb;padding:20px 0}
+.tab-content ul.steps > li:first-child{border:none}
+.tab-content ul.steps > li > label,.tab-content ul.steps > div > li > label{padding:0 0 0 28px;position:relative;font-size:26px;font-weight:600;}
+.tab-content ul.steps > li > label::before,.tab-content ul.steps > div > li > label::before{background:#df8701 none repeat scroll 0 0;border-radius:50%;bottom:0;content:"";height:10px;left:8px;margin:auto;position:absolute;top:0;width:10px}
+.tab-content .well{background:rgba(0,0,0,0) none repeat scroll 0 0;border-bottom:medium none;border-radius:0;margin:0;padding:40px 40px 0}
+.button-container{background:#dbebeb none repeat scroll 0 0;float:left;width:100%;text-align:center;padding:25px}
+.button-container .btn-default{background:#dd8500 none repeat scroll 0 0;border:medium none;border-radius:0;box-shadow:none;color:#ffffff;font-size:20px;text-transform:uppercase}
+.button-container .btn-default:hover{background:#bd7404}
+ul.steps input[type="radio"]{display:none}
+ul.steps input[type="radio"] + label{color:#292321;font-size:26px;font-weight:400;}
+ul.steps input[type="radio"]:checked + label{font-weight:500;}
+ul.steps input[type="radio"] + label span{display:inline-block;width:32px;height:32px;margin:-1px 4px 0 0;vertical-align:middle;cursor:pointer;-moz-border-radius:50%;border-radius:50%;background:none;border:1px solid #479590}
+ul.steps input[type="radio"]:checked + label span{background-color:#479590;position:relative}
+ul.steps input[type="radio"]:checked + label span::after{background:url(../../../images/bullet-radio.png) no-repeat;bottom:0;content:"";height:14px;left:0;margin:auto;position:absolute;right:0;top:0;width:18px}
+ul.steps input[type="radio"] + label span,input[type="radio"]:checked + label span{-webkit-transition:background-color .4s linear;-o-transition:background-color .4s linear;-moz-transition:background-color .4s linear;transition:background-color .4s linear}
+.tab1-important{background:#f3ece3 none repeat scroll 0 0;border-bottom:1px solid #ccdede;border-top:1px solid #ccdede;padding:40px;margin:0 -40px}
+.tab1-important label.important{color:#c87b05;font-size:36px;line-height:36px;}
