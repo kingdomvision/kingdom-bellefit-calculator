@@ -749,3 +749,19 @@
   <!-- / .main-save -->
   
 </div>
+
+<script type='text/javascript'>
+jQuery(document).ready(function() {
+	// use jQuery to update progress bar
+	jQuery('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+		
+		//update progress
+		var step = jQuery(e.target).data('step');
+		var percent = (parseInt(step) / 4) * 100;
+		
+		jQuery('.progress-bar').css({width: percent + '%'});
+		jQuery('.progress-bar-text').text(percent + "%");
+		
+	});
+});
+</script>
