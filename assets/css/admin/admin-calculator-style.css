@@ -1,3 +1,22 @@
-@charset "utf-8";
-/* CSS Document */
-
+.toplevel_page_bellefit-calculator .wrap{
+    border: 1px solid #dddddd;
+    display: inline-block;
+}
+.form_details {
+    background: #ffffff;
+    border-bottom: 1px solid #dddddd;
+    float: left;
+    width: 100%;
+}
+.form_details .form_details_head, .form_details .form_details_value {
+    float: left;
+    padding: 10px;
+}
+.form_details .form_details_head {
+    background: #f8f8f8;
+    font-weight: bold;
+    width: 15%;
+}
+.form_details .form_details_value {
+    border-left: 1px solid #dddddd;
+}

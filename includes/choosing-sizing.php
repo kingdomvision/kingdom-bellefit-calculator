@@ -21,10 +21,12 @@
     
     <?php if (isset($_GET['action']) && $_GET['action'] == 'view') { ?>
     
-        <?php 
-        $cal_step_id = $_GET['id'];
-        $forms_data = $wpdb->get_results('SELECT * FROM cal_step_save WHERE cal_step_id = '.$cal_step_id.' ', OBJECT);
-        foreach($forms_data as $data) {
+        <?php
+		if (isset($_GET['id'])) {
+			$cal_step_id = $_GET['id'];
+			$forms_data = $wpdb->get_results('SELECT * FROM cal_step_save WHERE cal_step_id = '.$cal_step_id.' ', OBJECT);
+		} 
+	    foreach($forms_data as $data) {
             ?>
             <div class="form_details">
                 <div class="form_details_head">
@@ -88,23 +90,35 @@
             $cal_value = $data->cal_value;
             $cal_value = unserialize($cal_value);
             foreach ($cal_value as $key => $value) {
-                ?>
-                <div class="form_details">
-                    <div class="form_details_head">
-                        <?php echo ucfirst(str_replace('_', ' ', $key)); ?> : 
-                    </div>
-                    <div class="form_details_value">
-                        <?php echo $value; ?>
-                    </div>
-                </div>
-                <?php
+				if ($key != 'model' && $key != 'uniqid') {
+					?>
+					<div class="form_details">
+						<div class="form_details_head">
+							<?php 
+							if ($key == '_2_pregnancy_weight') {
+								echo 'Pregnancy weight';
+							} else if ($key == '_2_heaviest_weight') {
+								echo 'Heaviest weight';
+							} else if ($key == '_2_weight_now') {
+								echo 'Weight now';
+							} else  {
+								echo ucfirst(str_replace('_', ' ', $key)) . ' :'; 
+							}
+							?> 
+						</div>
+						<div class="form_details_value">
+							<?php echo $value; ?>
+						</div>
+					</div>
+					<?php
+				}
             }
         }
         ?>
 
     <?php } else { ?>
         <?php
-            $per_page = 5;
+            $per_page = 25;
             if (isset($_GET['pageno'])) {
                 $current_page = $_GET['pageno'];
             } else {
@@ -115,16 +129,36 @@
             } else {
                 $start_record = ($current_page * $per_page) - $per_page;
             }
-            $forms_count = $wpdb->get_results('SELECT count(*) FROM cal_step_save ORDER BY cal_step_id DESC', OBJECT); ?>
+			
+			if (isset($_GET['status']) && $_GET['status'] != '') {
+				if ($_GET['status'] == 'fill_form') { $where = ' WHERE status = 1'; }
+				if ($_GET['status'] == 'save_form') { $where = ' WHERE status = 0'; }
+			} else {
+				$where = '';
+			}
+			
+            $forms_count = $wpdb->get_results('SELECT count(*) FROM cal_step_save'. $where .' ORDER BY cal_step_id DESC', OBJECT); ?>
         <?php foreach($forms_count as $count) {
             $cnt = 'count(*)';
             $total_rec = $count->$cnt;
         } ?>
-        <?php //$forms_data = $wpdb->get_results('SELECT * FROM cal_step_save ORDER BY cal_step_id DESC LIMIT '.$start_record.', '.$per_page.' ', OBJECT);										
-        $forms_data = $wpdb->get_results('SELECT * FROM cal_step_save ORDER BY cal_step_id DESC', OBJECT);
+        <?php 
+		
+		$forms_data = $wpdb->get_results('SELECT * FROM cal_step_save'. $where . ' ORDER BY cal_step_id DESC LIMIT '.$start_record.', '.$per_page.' ', OBJECT);
+        //$forms_data = $wpdb->get_results('SELECT * FROM cal_step_save'. $where . ' ORDER BY cal_step_id DESC', OBJECT);
+		
+		$pagination_link = '';
+		if (isset($_GET['pageno']) && $_GET['pageno'] != '') {
+			$pagination_link = '&pageno='.$_GET['pageno'];
+		}
+		$status_link = '';
+		if (isset($_GET['status']) && $_GET['status'] != '') {
+			$status = $_GET['status'];
+			$status_link = '&status='.$status;
+		}
         ?>
         
-        <form method="post" action="<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&action=delete_all" >
+        <form method="post" action="<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&action=delete_all<?php echo $pagination_link . $status_link; ?>" >
             <div class="tablenav top">
                 <div class="alignleft actions bulkactions">
                     <label class="screen-reader-text" for="bulk-action-selector-top">Select bulk action</label>
@@ -133,6 +167,17 @@
                         <option value="delete">Delete</option>
                     </select>
                     <input type="submit" value="Apply" class="button action" id="doaction">
+                </div>
+                
+                <div class="filter_status" style="float:right; margin-right:5px;">
+                    <label>Select Status</label>
+                    <?php
+					?>
+                    <select id="filter-status" name="filter_status">
+                        <option value="">All</option>
+                        <option value="fill_form" <?php if (isset($_GET['status']) && $_GET['status'] == 'fill_form') echo 'selected="selected"'; ?>>Fill Form</option>
+                        <option value="save_form" <?php if (isset($_GET['status']) && $_GET['status'] == 'save_form') echo 'selected="selected"'; ?>>Save Form</option>
+                    </select>
                 </div>
             </div>
             <table class="wp-list-table widefat fixed striped posts">
@@ -164,7 +209,7 @@
                                     <a href="<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&action=view&id=<?php echo $data->cal_step_id; ?>">View</a>
                                 </span>&nbsp;|&nbsp;
                                 <span class="trash">
-                                    <a href="<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&action=delete&id=<?php echo $data->cal_step_id; ?>">Delete</a>
+                                    <a href="<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&action=delete&id=<?php echo $data->cal_step_id . $pagination_link . $status_link; ?>">Delete</a>
                                 </span>
                             </div>
                         </td>
@@ -198,7 +243,39 @@
             </table>
         </form>
         <div class="pagination">
-        
+        	<?php
+			$end_rec = $start_record + $per_page;
+			if ( $end_rec > $total_rec) {
+				$end_rec = $total_rec;
+			} 
+			?>
+        	<div class="page_stat">Showing <?php echo $start_record + 1; ?> - <?php echo $end_rec; ?> of <?php echo $total_rec; ?> Records</div>
+            <?php
+			$total_pages = $total_rec / $per_page;
+			$total_pages = ceil($total_pages);
+			if ($total_pages > 1) {
+			?>
+            <div class="paging">
+            	<?php for ($pg = 1; $pg <= $total_pages; $pg++) { ?>
+                	<?php 
+					$page_link = admin_url() . 'admin.php?page=bellefit-calculator&pageno='.$pg; 
+					?>
+					<span class="paged <?php if ($current_page == $pg) echo 'active'; ?>"><a href="<?php echo $page_link.$status_link; ?>"><?php echo $pg; ?></a></span>
+				<?php } ?>
+            </div>
+            <?php } ?>
         </div>
+        <script>
+        	jQuery(document).ready(function(e) {
+                jQuery("#filter-status").on("change", function() {
+					var $filter = jQuery(this).val();
+					if ($filter != '') {
+						window.location.assign('<?php echo admin_url(); ?>admin.php?page=bellefit-calculator&status='+$filter);
+					} else {
+						window.location.assign('<?php echo admin_url(); ?>admin.php?page=bellefit-calculator');
+					}
+				});
+            });
+        </script>
     <?php } ?>
 </div>

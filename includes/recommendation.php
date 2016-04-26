@@ -4,32 +4,14 @@ require_once( $parse_uri[0] . 'wp-load.php' );
 global $wpdb;
 
 $fields = json_decode(file_get_contents('php://input'));
+
 $model = $fields->model;
+$cal_key = $fields->uniqid;
+$cal_value = serialize($fields);
 
-//print_r($fields);
-
-function getFileCsvArray($file_name){
-	$csv_data = array();
-	$handle = fopen( cal_includes($file_name), "r");
-	while (($data = fgetcsv($handle)) !== FALSE) {
-		$csv_data[] = $data;
-	}
-	return $csv_data;
-}
-	
-	//$give_birth = $fields->give_birth;
-	$birth_by_csection = $fields->birth_by_csection;
-	$plan_on_csection = $fields->plan_on_csection;
-	$pre_pregnancy_jean_size = $fields->pregnancy_jean_size;
-	$hip_size = $fields->measuring_inches;
-	$weight_gained = $fields->pregnancy_gained;
-	$body_shape = strtolower($fields->body_shapes);
-	$ngObject = array();
-	
-	//save form data in database for admin view
-	$to = $field->save_email;
-	$cal_key = $fields->uniqid;
-	$cal_value = serialize($fields);
+$ngObject = array();
+$query = 0;
+$date = date('Y-m-d h:i:s');
 	
 	if (is_user_logged_in()) {
 		$user_id = get_current_user_id();
@@ -48,58 +30,98 @@ function getFileCsvArray($file_name){
 	} else if ($model == 'save') {
 		$status = '0';
 	}
-	$date = date('Y-m-d h:i:s');
-	/*$wpdb->insert(
-		'cal_step_save', array(
-			'cal_key' => $cal_key,
-			'cal_value' => $cal_value,
-			'user_id' => $user_id,
-			'ip' => $ip,
-			'status' => $status,
-			'date' => $date
-		)
-	);*/
 	
+	
+	if( ! empty($cal_key) ) {
+		
+		$result = $wpdb->get_row(" SELECT * FROM cal_step_save WHERE cal_key = '$cal_key' AND status = 0 ");
+		$num_rows = $wpdb->num_rows;
+		$res_key = $result->cal_key;
+		
+		if( $cal_key == $res_key && $num_rows == 1 )
+			$query = 1;
+			
+		if( $query == 1 ) {
+			$wpdb->update(
+				'cal_step_save', 
+				array(
+					'cal_value' => $cal_value,
+					'user_id' => $user_id,
+					'ip' => $ip,
+					'status' => $status,
+					'date' => $date
+				),
+				array( 'cal_key' => $cal_key )
+			);
+		}
+		else {
+			$wpdb->insert(
+				'cal_step_save', array(
+					'cal_key' => $cal_key,
+					'cal_value' => $cal_value,
+					'user_id' => $user_id,
+					'ip' => $ip,
+					'status' => $status,
+					'date' => $date
+				)
+			);
+		}
+	}
+
+$status = "error";
+
+/* Save Link Code Start */
 	if ($model == 'save') {
 		
-		$save_form_link = '<div><a href="'.get_permalink(1496) . '&action=retrive_form&uniqid='.$cal_key.'">'.get_permalink(1496) . '&action=retrive_form&uniqid='.$cal_key.'</a></div>';
+		$to = $fields->save_email;
+		//$to = "saad@kingdom-vision.co.uk";
+		$subject = "Draft Form Link";
 		
-		$headers .= "MIME-Version: 1.0\r\n";
-		$headers .= "From: Bellefit Postpartum Girdles and Corsets <info@bellefitvip.com>\r\n";
-		$headers .= "Reply-To: Bellefit Postpartum Girdles and Corsets <info@bellefitvip.com>\r\n";
-		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		$save_form_link = '<div><a href="'.get_permalink(1496) . '?action=retrive_form&token='.$cal_key.'">'.get_permalink(1496) . '?&action=retrive_form&uniqid='.$cal_key.'</a></div>';
 		
-		$subject = 'Draft Form Link';
-		$message .= '<html><head>';
-		$meesage .= '<title>Draft Form Link - Bellefit Postpartum Girdles and Corsets</title>';
-		$message .= '</head><body style="background:#ffffff;"><div class="page-wrapper">';
-		$message .= '<div class="header" style="text-align:center;"><a href="http://bellefitvip.com/"><img class="logo1" alt="Bellefit Postpartum Girdles and Corsets" src="http://bellefitvip.com/wp-content/uploads/Bellefit-Logo-Header-400.png"></a></div>';
-		$message .= '<hr style="border:2px solid #999; margin-bottom:30px" />';
-		$message .= '<div class="body"><div class="body-content">Dear User</div>';
-		$message .= '<div class="body-content"><p>Thank you very much for visting our site. You draft form successfully saved and below the link for continue form in future. </p></div>';
-		$message .= $save_form_link;
-		$message .= '<div class="body-content"><p>If you have any difficulties, please Email us directly on <br />info@bellefitvip.com</p></div>';
-		$message .= '<div class="body-content">Best wishes,</div>';
-		$message .= '<div class="body-content">www.bellefitvip.com</div>';
-	  	$message .=  '</div>';
-	  	$message .= '</div></body></html>';
+		$body = '<div class="body"><div class="body-content">Dear User</div>';
+		$body .= '<div class="body-content"><p>Thank you very much for visting our site. You draft form successfully saved and below the link for continue form in future. </p></div>';
+		$body .= $save_form_link;
+		$body .= '</div>';
 		
-		mail($to, $subject, $message, $headers);
+		if( !empty($to) ) {
+			if( cal_email_template($to, $subject, $body) ) {
+				$status = 'success';
+				$html = 'Email Sent Succesfully';
+			}
+			else {
+				$html = 'Email Sent !Error';
+			}
+		}
 		
-		$ngObject['status'] = 'success';
+		$ngObject['status'] = $status;
 		$ngObject['html'] = $to;
-		
 		
 		echo json_encode( $ngObject );
 		exit;
 	}
+/* Save Link Code Ended */
 	
-	$birth_by_csection = "Yes";
-	$plan_on_csection = "";
-	$pre_pregnancy_jean_size = "3-4";
-	$hip_size = 35.5;
-	$weight_gained = 16;
-	$body_shape = strtolower("Oval");
+	
+/* Product Recommended Code Start */
+	function getFileCsvArray($file_name){
+		$csv_data = array();
+		$handle = fopen( cal_includes($file_name), "r");
+		while (($data = fgetcsv($handle)) !== FALSE) {
+			$csv_data[] = $data;
+		}
+		return $csv_data;
+	}
+	
+	//$give_birth = $fields->give_birth;
+	$birth_by_csection = $fields->birth_by_csection;
+	$plan_on_csection = $fields->plan_on_csection;
+	$pre_pregnancy_jean_size = $fields->pregnancy_jean_size;
+	$hip_size = $fields->measuring_inches;
+	$weight_gained = $fields->pregnancy_gained;
+	$how_taller = $fields->tall_are_you;
+	$body_shape = strtolower($fields->body_shapes);
+	
 	
 	if ($birth_by_csection == 'No' || $plan_on_csection == 'No') {	
 		$birth_type = "Natural";
@@ -189,14 +211,6 @@ function getFileCsvArray($file_name){
 		}
 	}
 	
-	//$getProducts = array_merge($prod_style, $prod_bundle);
-	//$getProducts []= $prod_bundle;
-	
-	/*echo '<pre>';
-	print_r($prod_arr);
-	echo '</pre>';
-	echo '<br>';*/
-	
 	$prod_args = array(
 		'post_type'		=> 'product',
 		'post_staus'	=> 'publish',
@@ -229,19 +243,21 @@ function getFileCsvArray($file_name){
 			if(! empty($sale_price) )
 				$sale_price = wc_price($sale_price);
 			
-			//echo "<br>";
-			$post_thumbnail_id = get_post_thumbnail_id( $product_id );
-			$thumbnail_url = wp_get_attachment_image_url( $post_thumbnail_id, 'thumbnail' );
 			
 			if(stripos($getSku, "bundle") !== false)
 				$_ObjKey = "bundle";
-				
 			else
 				$_ObjKey = "style";
+			
+			
+			$thumbnail_size = 'medium';
+			$post_thumbnail_id = get_post_thumbnail_id( $product_id );
+			$thumbnail = wp_get_attachment_image_src( $post_thumbnail_id, $thumbnail_size );
+			$thumbnail_url = $thumbnail[0];
 				
 			$ngObject[$_ObjKey][$cnt]['sku'] = $getSku;
 			$ngObject[$_ObjKey][$cnt]['title'] = get_the_title();
-			$ngObject[$_ObjKey][$cnt]['link'] = get_permalink();
+			$ngObject[$_ObjKey][$cnt]['link'] = get_permalink().'?calid='.$cal_key.'&size='.strtolower($product_name).'&how_taller='.$how_taller;
 			$ngObject[$_ObjKey][$cnt]['img'] = $thumbnail_url;
 			$ngObject[$_ObjKey][$cnt]['price'] = wc_price($actual_price);
 			$ngObject[$_ObjKey][$cnt]['sale_price'] = $sale_price;
@@ -250,13 +266,8 @@ function getFileCsvArray($file_name){
 		}
 	}
 	wp_reset_postdata();
+/* Product Recommended Code Ended */
 	
-	/*echo '<pre>';
-	print_r($ngObject);
-	echo '</pre>';*/
-	//echo '<br>';
-	
-//exit;
 echo json_encode( $ngObject );
 exit;
 ?>
